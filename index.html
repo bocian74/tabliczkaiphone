@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+    <!-- iOS Fullscreen -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="apple-touch-icon" href="icon.png">
+  <title>Tabiczka</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+	  overflow: hidden;
+	  touch-action: none;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-size: 24px;
+      position: relative;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 20px;
+    }
+
+    #quiz-column {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    #question {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      font-size: 60px;
+      padding: 10px;
+      margin: 5px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      color: black;
+    }
+
+    select {
+      font-size: 20px;
+      padding: 6px 10px;
+      margin: 5px;
+    }
+	
+	    #feedback {
+      min-height: 40px;
+      font-size: 28px;
+      margin: 10px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 24px;
+      cursor: pointer;
+      min-width: 180px;
+    }
+
+    #resetBtn {
+      font-size: 14px;
+      padding: 6px 14px;
+      margin-top: 20px;
+    }
+
+    #timer {
+      font-size: 26px;
+      font-weight: bold;
+      height: 35px;
+      margin: 5px 0;
+    }
+
+    #score {
+      margin-top: 20px;
+      font-size: 22px;
+    }
+
+    .score-correct {
+      color: green;
+    }
+
+    .score-wrong {
+      color: red;
+    }
+
+    #bottom-options {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: auto;
+      width: 100%;
+	  font-size: 15px;
+    }
+
+    #options {
+      margin-top: 10px;
+      font-size: 15px;
+    }
+
+    #options label {
+      margin: 0 20px;
+    }
+
+    #dot-grid {
+      width: 100%;
+      height: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 20px;
+    }
+
+    .dot-container {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      justify-content: center;
+      align-content: center;
+    }
+
+    .dot {
+      border-radius: 50%;
+      background-color: black;
+      display: inline-block;
+    }
+
+    .correct-input {
+      color: green;
+    }
+
+    .wrong-input {
+      color: red;
+    }
+	
+	    /* Additional styles for language handling */
+    .lang-hidden {
+      display: none;
+    }
+	
+	    @media (min-width: 768px) and (orientation: landscape) {
+      #container {
+        flex-direction: row;
+      }
+      #quiz-column, #dot-grid {
+        flex: 0 0 50%;
+        max-width: 50%;
+      }
+    }
+	
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="quiz-column">
+      <div>
+        <div id="question">Loading...</div>
+		
+        <input type="number" id="answer" placeholder="?" inputmode="numeric" />
+        <div id="feedback"></div>
+		
+        <div class="button-row">
+          <button id="submitBtn">Submit</button>
+          <button id="nextBtn">Next Question</button>
+        </div>
+        <div id="timer" style="display: none;"><span id="timeLeftLabel">Time left:</span> <span id="timeLeft">20</span>s</div>
+        
+		<div id="score">
+          <span id="correctLabel">Correct:</span> <span class="score-correct" id="correctCount">0</span> |
+          <span id="wrongLabel">Wrong:</span> <span class="score-wrong" id="wrongCount">0</span>
+        </div>
+		
+        <button id="resetBtn">Reset Score</button>
+      
+	  </div>
+	  
+      <div id="bottom-options">
+        <label for="maxResultSelect">Max Result:
+          <select id="maxResultSelect">
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+		
+        <label for="timerSelect">Timer (seconds):
+          <select id="timerSelect">
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="60" selected>60</option>
+            <option value="90">90</option>
+          </select>
+        </label>
+		
+        
+		  
+          <label for="languageSelect">Language:
+            <select id="languageSelect">
+              <option value="en">English</option>
+              <option value="pl">Polski</option>
+            </select>
+          </label>
+		 
+		 <div id="options">
+          <label><input type="checkbox" id="enableSounds" checked> Sound Effects</label>
+          <label><input type="checkbox" id="enableTimer" checked> Countdown Timer</label>
+         </div>
+      </div>
+    </div>
+	
+    <div id="dot-grid">
+      <div class="dot-container" id="dotContainer"></div>
+    </div>
+  </div>
+
+  <audio id="soundCorrect" src="correct.mp3" preload="auto"></audio>
+  <audio id="soundWrong" src="wrong.mp3" preload="auto"></audio>
+
+  <script>
+    let correctCount = 0;
+    let wrongCount = 0;
+    let currentA = 0;
+    let currentB = 0;
+    let maxResult = parseInt(localStorage.getItem('maxResult')) || 50;
+    let timerLimit = parseInt(localStorage.getItem('timerLimit')) || 60;
+    let timerInterval;
+    let timeLeft = timerLimit;
+
+    const questionEl = document.getElementById("question");
+    const answerEl = document.getElementById("answer");
+    const submitBtn = document.getElementById("submitBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const correctCountEl = document.getElementById("correctCount");
+    const wrongCountEl = document.getElementById("wrongCount");
+    const enableSounds = document.getElementById("enableSounds");
+    const enableTimer = document.getElementById("enableTimer");
+    const timerEl = document.getElementById("timer");
+    const timeLeftEl = document.getElementById("timeLeft");
+    const soundCorrect = document.getElementById("soundCorrect");
+    const soundWrong = document.getElementById("soundWrong");
+    const dotContainer = document.getElementById("dotContainer");
+    const maxResultSelect = document.getElementById("maxResultSelect");
+    const timerSelect = document.getElementById("timerSelect");
+	const feedbackEl = document.getElementById("feedback");
+
+
+    const translations = {
+      en: {
+        submit: "Submit",
+        next: "Next Question",
+        reset: "Reset Score",
+        correct: "CORRECT!",
+        wrong: "WRONG!",
+        pleaseEnter: "Please enter a number.",
+        timeLeft: "Time left:",
+        correctCount: "Correct:",
+        wrongCount: "Wrong:",
+        maxResult: "Max Result:",
+        timer: "Timer (seconds):",
+        language: "Language:",
+        sound: "Sound Effects",
+        countdown: "Countdown Timer"
+      },
+      pl: {
+        submit: "Sprawdź",
+        next: "Następne pytanie",
+        reset: "Zresetuj wynik",
+        correct: "DOBRZE!",
+        wrong: "ŹLE!",
+        pleaseEnter: "Wpisz liczbę.",
+        timeLeft: "Pozostały czas:",
+        correctCount: "Poprawne:",
+        wrongCount: "Błędne:",
+        maxResult: "Maksymalny wynik:",
+        timer: "Czas (sekundy):",
+        language: "Język:",
+        sound: "Efekty dźwiękowe",
+        countdown: "Odliczanie czasu"
+      }
+    };
+
+    let currentLang = localStorage.getItem("lang") || "pl";
+    const t = (key) => translations[currentLang][key];
+    const languageSelect = document.getElementById("languageSelect");
+
+    languageSelect.value = currentLang;
+    languageSelect.addEventListener("change", () => {
+      currentLang = languageSelect.value;
+      localStorage.setItem("lang", currentLang);
+      applyTranslations();
+      generateQuestion();
+    });
+
+    function applyTranslations() {
+      document.getElementById("submitBtn").textContent = t("submit");
+      document.getElementById("nextBtn").textContent = t("next");
+      document.getElementById("resetBtn").textContent = t("reset");
+      document.querySelector("label[for='maxResultSelect']").childNodes[0].textContent = t("maxResult") + " ";
+      document.querySelector("label[for='timerSelect']").childNodes[0].textContent = t("timer") + " ";
+      document.querySelector("label[for='languageSelect']").childNodes[0].textContent = t("language") + " ";
+      document.querySelectorAll("#options label")[0].lastChild.textContent = t("sound");
+      document.querySelectorAll("#options label")[1].lastChild.textContent = t("countdown");
+      document.getElementById("timeLeftLabel").textContent = t("timeLeft");
+      document.getElementById("correctLabel").textContent = t("correctCount");
+      document.getElementById("wrongLabel").textContent = t("wrongCount");
+
+      // update feedback text in input field if answer already submitted
+      if (answerEl.classList.contains("correct-input")) {
+        answerEl.value = answerEl.value.replace(/[^\d]+.*/, '') + ' ' + t("correct");
+      } else if (answerEl.classList.contains("wrong-input")) {
+        answerEl.value = answerEl.value.replace(/[^\d]+.*/, '') + ' ' + t("wrong");
+      }
+    }
+
+    applyTranslations();
+
+
+    maxResultSelect.value = maxResult;
+    timerSelect.value = timerLimit;
+
+    maxResultSelect.addEventListener('change', () => {
+      maxResult = parseInt(maxResultSelect.value);
+      localStorage.setItem('maxResult', maxResult);
+      generateQuestion();
+    });
+
+    timerSelect.addEventListener('change', () => {
+      timerLimit = parseInt(timerSelect.value);
+      localStorage.setItem('timerLimit', timerLimit);
+      timeLeft = timerLimit;
+    });
+
+    function playSound(type) {
+      if (!enableSounds.checked) return;
+      if (type === "correct") soundCorrect.play();
+      else if (type === "wrong") soundWrong.play();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      if (!enableTimer.checked) {
+        timerEl.style.display = "none";
+        return;
+      }
+      timerEl.style.display = "block";
+      timeLeft = timerLimit;
+      timeLeftEl.textContent = timeLeft;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timeLeftEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+		  let userAnswer ="";
+          autoSubmit2(false);
+        }
+      }, 1000);
+    }
+
+function renderDots(rows, cols) {
+  dotContainer.innerHTML = '';
+
+  // Calculate available width and height from container
+  const containerWidth = dotContainer.offsetWidth;
+  const containerHeight = dotContainer.offsetHeight;
+
+  // Reserve 50px margin on each side
+  const availableWidth = containerWidth - 100;
+  const availableHeight = containerHeight - 100;
+
+  const dotSizeX = Math.floor(availableWidth / cols);
+  const dotSizeY = Math.floor(availableHeight / rows);
+  const dotSize = Math.max(10, Math.min(dotSizeX, dotSizeY)); // enforce minimum size
+
+  dotContainer.style.gridTemplateColumns = `repeat(${cols}, ${dotSize}px)`;
+  dotContainer.style.gridTemplateRows = `repeat(${rows}, ${dotSize}px)`;
+  dotContainer.style.gap = '6px';
+
+  for (let i = 0; i < rows * cols; i++) {
+    const dot = document.createElement("div");
+    dot.classList.add("dot");
+    dot.style.width = dot.style.height = `${dotSize}px`;
+    dotContainer.appendChild(dot);
+  }
+}
+
+
+    function colorDots(color) {
+      document.querySelectorAll(".dot").forEach(dot => {
+        dot.style.backgroundColor = color;
+      });
+    }
+
+    function generateQuestion() {
+      let a, b;
+      do {
+        a = Math.floor(Math.random() * 9) + 2;
+        b = Math.floor(Math.random() * 9) + 2;
+      } while (a * b > maxResult);
+      currentA = a;
+      currentB = b;
+      questionEl.textContent = `${a} × ${b} = ?`;
+      renderDots(a, b);
+      answerEl.value = '';
+      answerEl.className = '';
+      submitBtn.disabled = false;
+      nextBtn.disabled = true;
+      answerEl.disabled = false;
+	  feedbackEl.textContent = ""
+	  answerEl.style.color = "black";
+      answerEl.focus();
+      colorDots("black");
+      startTimer();
+    }
+	
+		function playSound(type) {
+  if (!document.getElementById("enableSounds").checked) return;
+  const sound = type === "correct" ? document.getElementById("soundCorrect") : document.getElementById("soundWrong");
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch(err => console.log("Playback prevented:", err));
+  }
+}
+
+    function updateScore() {
+      correctCountEl.textContent = correctCount;
+      wrongCountEl.textContent = wrongCount;
+    }
+
+    function autoSubmit(isManual = true) {
+      if (submitBtn.disabled) return;
+      const correctAnswer = currentA * currentB;
+      const userAnswer = parseInt(answerEl.value, 10);
+
+      if (isManual && isNaN(userAnswer)) {
+        answerEl.value = "Please enter a number.";
+        answerEl.className = "wrong-input";
+        return;
+      }
+	 
+ 
+	 
+	if (currentLang==="en") {
+		  if (userAnswer === correctAnswer) {
+			feedbackEl.textContent = "CORRECT!";
+			feedbackEl.className = "correct-input";
+			answerEl.className = "correct-input";
+			answerEl.style.color = "green";
+			playSound("correct");
+			colorDots("green");
+			correctCount++;
+		  } else {
+			feedbackEl.textContent = "WRONG!";
+			feedbackEl.className = "wrong-input";
+			answerEl.className = "wrong-input";
+			answerEl.style.color = "red";
+			playSound("wrong");
+			colorDots("red");
+			wrongCount++;
+		  }
+		}
+		else {
+			if (userAnswer === correctAnswer) {
+			feedbackEl.textContent = "DOBRZE!";
+			feedbackEl.className = "correct-input";
+			answerEl.className = "correct-input";
+			answerEl.style.color = "green";
+			playSound("correct");
+			colorDots("green");
+			correctCount++;
+		  } else {
+			feedbackEl.textContent = "ŹLE!";
+			feedbackEl.className = "wrong-input";
+			answerEl.className = "wrong-input";
+			answerEl.style.color = "red";
+			playSound("wrong");
+			colorDots("red");
+			wrongCount++;
+		  }
+		}
+
+      questionEl.textContent = `${currentA} × ${currentB} = ${correctAnswer}`;
+      updateScore();
+      submitBtn.disabled = true;
+      nextBtn.disabled = false;
+      answerEl.disabled = true;
+      clearInterval(timerInterval);
+    }
+	
+	
+	
+    function autoSubmit2(isManual = true) {
+      if (submitBtn.disabled) return;
+      const correctAnswer = currentA * currentB;
+      const userAnswer = parseInt(answerEl.value, 10);
+
+      if (isManual && isNaN(userAnswer)) {
+        answerEl.value = "Please enter a number.";
+        answerEl.className = "wrong-input";
+        return;
+      }
+	 
+ 
+	 
+	if (currentLang==="en") {
+		  if (userAnswer === correctAnswer) {
+			feedbackEl.textContent = "CORRECT!";
+			feedbackEl.className = "correct-input";
+			answerEl.className = "correct-input";
+			answerEl.style.color = "green";
+			playSound("correct");
+			colorDots("green");
+			correctCount++;
+		  } else {
+			feedbackEl.textContent = "Time's up!";
+			feedbackEl.className = "wrong-input";
+			answerEl.className = "wrong-input";
+			answerEl.style.color = "red";
+			playSound("wrong");
+			colorDots("red");
+			wrongCount++;
+		  }
+		}
+		else {
+			if (userAnswer === correctAnswer) {
+			feedbackEl.textContent = "DOBRZE!";
+			feedbackEl.className = "correct-input";
+			answerEl.className = "correct-input";
+			answerEl.style.color = "green";
+			playSound("correct");
+			colorDots("green");
+			correctCount++;
+		  } else {
+			feedbackEl.textContent = "Brak odpowiedzi!";
+			feedbackEl.className = "wrong-input";
+			answerEl.className = "wrong-input";
+			answerEl.style.color = "red";
+			playSound("wrong");
+			colorDots("red");
+			wrongCount++;
+		  }
+		}
+
+      questionEl.textContent = `${currentA} × ${currentB} = ${correctAnswer}`;
+      updateScore();
+      submitBtn.disabled = true;
+      nextBtn.disabled = false;
+      answerEl.disabled = true;
+      clearInterval(timerInterval);
+    }
+	
+
+
+
+    submitBtn.addEventListener("click", () => autoSubmit(true));
+    nextBtn.addEventListener("click", generateQuestion);
+
+    resetBtn.addEventListener("click", () => {
+		if (currentLang==="en") {
+		  if (confirm("Are you sure you want to reset the score?")) {
+			correctCount = 0;
+			wrongCount = 0;
+			updateScore();
+			generateQuestion();
+		  }
+		}
+		else {
+		  if (confirm("Czy na pewno chcesz zresetować wynik?")) {
+			correctCount = 0;
+			wrongCount = 0;
+			updateScore();
+			generateQuestion();
+		  }
+		}  
+    });
+
+    answerEl.addEventListener("keydown", function(event) {
+      if (event.key === "Enter" && !submitBtn.disabled) {
+        autoSubmit(true);
+      }
+    });
+
+    document.addEventListener('keyup', event => {
+      if ((event.code === 'Space' || event.code === 'ArrowRight') && submitBtn.disabled) {
+        generateQuestion();
+      }
+    });
+
+    window.onload = () => {
+      generateQuestion();
+      nextBtn.disabled = true;
+    };
+	
+	
+
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function (event) {
+    const now = new Date().getTime();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault(); // Prevent double-tap zoom
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+
+
+  </script>
+
+</body>
+</html>
